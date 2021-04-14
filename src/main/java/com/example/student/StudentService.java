@@ -1,9 +1,12 @@
 package com.example.student;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class StudentService {
@@ -33,6 +36,23 @@ public class StudentService {
 			throw new IllegalStateException("student with id " + studentId + " does not exists");
 		}
 		studentRepository.deleteById(studentId);
+	}
+	
+	@Transactional
+	public void updateStudent(Long studentId, String name, String email) {
+		Student student = studentRepository.findById(studentId).orElseThrow(() -> new IllegalStateException("Student with id " + studentId + " does not exist"));
+		
+		if (name != null && name.length() > 0 && !Objects.equals(student.getName(), name)) {
+			student.setName(name);
+		}
+		
+		if (email != null && email.length() > 0 && !Objects.equals(student.getEmail(), email)) {
+			Optional<Student> studeOptional = studentRepository.findByEmail(email);
+			if (studeOptional.isPresent()) {
+				throw new IllegalStateException("Email taken");
+			}
+			student.setEmail(email);
+		}
 	}
 
 //	Menampilkan data dalam bentuk json
